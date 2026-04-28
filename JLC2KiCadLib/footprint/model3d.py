@@ -3,6 +3,7 @@ import logging
 import os
 import re
 from KicadModTree import *
+from .. import helper
 
 wrl_header = """#VRML V2.0 utf8
 #created by JLC2KiCad_lib using the JLCPCB library
@@ -18,7 +19,8 @@ def get_StepModel(component_uuid, footprint_info, kicad_mod):
     # and points to the bucket containing the step files.
 
     response = requests.get(
-        f"https://modules.easyeda.com/qAxj6KHrDKw4blvCG8QJPs7Y/{component_uuid}"
+        f"https://modules.easyeda.com/qAxj6KHrDKw4blvCG8QJPs7Y/{component_uuid}",
+        headers=helper.get_easyeda_headers()
     )
     if response.status_code == requests.codes.ok:
         ensure_footprint_lib_directories(footprint_info)
@@ -60,7 +62,8 @@ def get_WrlModel(
     logging.info("Creating WRL model ...")
 
     response = requests.get(
-        f"https://easyeda.com/analyzer/api/3dmodel/{component_uuid}"
+        f"https://easyeda.com/analyzer/api/3dmodel/{component_uuid}",
+        headers=helper.get_easyeda_headers()
     )
     if response.status_code == requests.codes.ok:
         text = response.content.decode()

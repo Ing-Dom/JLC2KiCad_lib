@@ -6,6 +6,7 @@ import logging
 
 from KicadModTree import *
 from .symbol_handlers import *
+from .. import helper
 
 
 template_lib_header = f"""\
@@ -41,7 +42,7 @@ def create_symbol(
 
     ComponentName = ""
     for component_uuid in symbol_component_uuid:
-        response = requests.get(f"https://easyeda.com/api/components/{component_uuid}")
+        response = requests.get(f"https://easyeda.com/api/components/{component_uuid}", headers=helper.get_easyeda_headers())
         if response.status_code == requests.codes.ok:
             data = json.loads(response.content.decode())
         else:

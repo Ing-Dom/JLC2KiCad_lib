@@ -11,13 +11,32 @@ from .symbol.symbol import create_symbol
 
 def add_component(component_id, args):
     logging.info(f"creating library for component {component_id}")
-    data = json.loads(
-        requests.get(
-            f"https://easyeda.com/api/products/{component_id}/svgs"
-        ).content.decode()
-    )
+    try:
+        response = requests.get(
+            f"https://easyeda.com/api/products/{component_id}/svgs",
+            timeout=10,
+            headers=helper.get_easyeda_headers()
+        )
+        response.raise_for_status()
+        content = response.content.decode()
+        if not content:
+            logging.error(
+                f"Empty response from EasyEDA API for {component_id}. The API may be unavailable or the component does not exist."
+            )
+            return ()
+        data = json.loads(content)
+    except requests.exceptions.RequestException as e:
+        logging.error(
+            f"Network error fetching component {component_id}: {e}"
+        )
+        return ()
+    except json.JSONDecodeError as e:
+        logging.error(
+            f"Invalid JSON response from EasyEDA API for {component_id}: {e}"
+        )
+        return ()
 
-    if not data["success"]:
+    if not data.get("success"):
         logging.error(
             f"failed to get component uuid for {component_id}\nThe component # is probably wrong. Check a possible typo and that the component exists on easyEDA"
         )
